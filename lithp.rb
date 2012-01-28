@@ -1,3 +1,6 @@
+# by Fogus
+# http://joyofclojure.com
+
 class Lisp
   def initialize
     @env = { 
