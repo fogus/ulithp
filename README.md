@@ -1,8 +1,18 @@
 # uLithp
 
-A micro LISP implementation in ~30 lines of Ruby, with a reader in 32 lines, and a REPL in 12 lines.  Rreally frickin' small.
+A micro LISP implementation in ~30 lines of Ruby, with a reader in 32 lines, and a REPL in 12 lines.  Really frickin' small.
 
-See the lithp.rb file for implementation details.
+* `car`
+* `cdr`
+* `quote`
+* `atom`
+* `if`
+* `label`
+* `cons`
+* `eq`
+* `λ`
+
+See the lithp.rb file for implementation details and the [uLithp blog post](http://blog.fogus.me/2012/01/25/lisp-in-40-lines-of-ruby/).
 
 ## usage
 
@@ -20,9 +30,12 @@ You'll then see a prompt:
 Start typing uLithp code:
 
 ```lisp
-    (car (quote 1 2 3))
+    (car (quote (1 2 3)))
 	
-	(cdr (quote 1 2 3))
+	(cdr (quote (1 2 3)))
+	
+	(label second (quote (λ (x) (car (cdr x))))) 
+	(second (quote (1 2 3)))
 ```
 
 Enjoy!
