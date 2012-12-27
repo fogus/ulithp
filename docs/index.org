@@ -14,7 +14,187 @@
 
 This is a line-by-line deconstruction of hom μLithp works, including commentary on extending the base language.
 
-** Line 1
+** The primordial functions and forms
 
-TODO
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+class Lisp
+#+end_src
+
+Ruby is one of [[http://c2.com/cgi/wiki?ArgumentsAgainstOop][those]] kinds of languages, so everything starts with a class declaration. Kidding aside, I thought it would be cool to encapsulate Lispiness in a class a provide extension via inheritance, but never got around to trying it. 
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  def initialize
+#+end_src
+
+The constructor seems like as good a place as any to declare the basic functionality.  Every mimimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
+
+ - ~label~ : a way to bind a value to a name
+ - ~quote~ : avoids evalutation of an expression
+ - ~car~   : retrieves the first element in a list
+ - ~cdr~   : retrieves all but the first element in a list
+ - ~cons~  : constructs a new list from some element appended to the front of some list
+ - ~eq~    : checks the equality of two values
+ - ~if~    : checks the truthiness of an expression and evaluates one of two branches depending on the result
+ - ~atom~  : checks if a value is a base value (i.e. not a composition type like a list)
+ - ~λ~     : creates a function
+
+I'll give more detail about each below.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    @env = { :label => lambda { |(name,val), _| @env[name] = val },
+#+end_src
+
+Every Lisp evaluation takes place in the context of some environment.  In μLithp the environment is a simple Hash instance and represents a global evaluation context.  The ~:label~ symbol is bound to a ~lambda~ that takes two things, an Array with a symbol representing a name and a value and also a context (that is ignored).  The name is then inserted into the global environment with the given value.  As you can see, all bindings are created explicitly in ~@env~.
+
+You'll notice that all of the ~lambda~s take an array as the first argument and a context as the second.  This is key for future expansion.  Additionally, I like to use Ruby's destructuring format to unwrap the actual arguments hidden in the passed array.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :car   => lambda { |(list), _| list[0] },
+#+end_src
+
+The ~:car~ form returns the first element of its single argument.  In μLithp, lists are just Ruby arrays at the bottom.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :cdr   => lambda { |(list), _| list.drop 1 },
+#+end_src
+
+The ~:cdr~ form takes a Ruby array and drops the first element.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :cons  => lambda { |(e,cell), _| [e] + cell },
+#+end_src
+
+The ~:cons~ form takes some value and plops it onto the front of the array provided as the second argument.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :eq    => lambda { |(l,r), _| l == r },
+#+end_src
+
+The ~:eq~ form takes two arguments and compares them for equality.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :if    => lambda { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+#+end_src
+
+The ~:if~ form is the first that uses the ~eval~ method.  That is, it takes a value as its first argument, tests its truthiness and either evaluates its second argument if ~true~ or evaluates its third if ~false~.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :atom  => lambda { |(sexpr), _| (sexpr.is_a? Symbol) or (sexpr.is_a? Numeric) },
+#+end_src
+
+The ~:atom~ form tests for atomness (cannot be split).  Currently, the only two things that are atoms are Symbols and Numbers.  Numbers are a bit gratuitous because μLithp has no math operators.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+             :quote => lambda { |sexpr, _| sexpr[0] } }
+#+end_src
+
+The ~:quote~ form just returns its first argument outright; without evaluation.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  end
+#+end_src
+
+And that's it for the primordial μLithp functions!  You might notice that I've not handled the ~λ~ form.  This little nasty is handled via voodoo later on.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  def apply fn, args, ctx=@env
+#+end_src
+
+Now starts one of the two mutually recursive functions required to implement any Lisp worth its salt, ~apply~.  The ~apply~ function takes three arguments: 1) a symbol naming a function, 2) a array of arguments to the function and 3) a context (that defaults to ~@env~).
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    return ctx[fn].call(args, ctx) if ctx[fn].respond_to? :call
+#+end_src
+
+The first thing that I try is to look up the named function in the provided context and use Ruby's ~#call~ method outright if the thing found responds to it.  Most like this will mean that I've found a ~lambda~, ~Proc~ or block, but it could be anything I suppose.  I don't care much for proper error handling; I'm a Clojure programmer at heart.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    self.eval ctx[fn][2], Hash[*(ctx[fn][1].zip args).flatten(1)]
+#+end_src
+
+If what was provided was not a Ruby callable, then I need to perform some magic.  What happens is that I look up the form stored at the symbol provided and get its third argument.  For a μLithp function of the conceptual form ~(lambda (x y) ...body...)~ this corresponds to the body of the function.  After retrieving the body I then evaluate it in the context provided adorned with the bindings provided as arguments to the function zipped up with the original function's named parameters.  This is the aforementioned voodoo regarding the ~lambda~ form.  What I'm doing is working under the assumption that a function was previously bound using ~:label~ in a certain format: ~[:anything, [:arg1, :arg2], [:frob, :arg1, :arg2]]~.  Magic!
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  end
+#+end_src
+
+And that's all there is to ~apply~.  Freaking sweet!
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  def eval sexpr, ctx=@env
+#+end_src
+
+The second mutually recursive function needed for a Lisp is ~eval~.  This is a bit more complex than ~apply~, but not too bad.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    if ctx[:atom].call [sexpr], ctx
+#+end_src
+
+The first thing to check in the course of evaluation is if the form provided is an atom.  An atom can mean it's either a Symbol or a Numeric.  So what I do I just look up the ~:atom~ lambda in the context provided and use it to determine atomness.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+      return ctx[sexpr] || sexpr
+#+end_src
+
+If the form given /was/ and atom then it might be a symbol bound to a value, so try to look it up in the context.  If it didn't resolve in the environment, then it is an atom on its own terms, so I just return it outright.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    end
+#+end_src
+
+And that's all that needs done for atoms.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    fn, *args = sexpr
+#+end_src
+
+So if it wasn't an atom then it must be an executable thing right?  Working under this assumption I destructure the form into the function symbol and its arguments.  If you recall from CS 101 in college, a Lisp list of the logical form ~(fn arg1 arg2)~ means to call function ~fn~ with arguments ~arg1~ and ~arg2~.  What I'm extracting is a symbol used for looking up the function implementation and an array of arguments.  If you'll recall, this is what ~apply~ expected.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    args = args.map { |a| self.eval(a, ctx) } if not [:quote, :if].member? fn
+#+end_src
+
+μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated /before/ the function is called.  However, I do not evaluate if the form under evaluation is either ~:quote~ or ~:if~.  This is the weakest link in extending μLithp, but I didn't want to add an extra line to make it more extensible.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+    apply(fn, args, ctx)
+#+end_src
+
+Now that I have the symbol naming a function and its evaluated arguments, I just call out to ~apply~ to handle the call.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+  end
+#+end_src
+
+And that's all there is to ~eval~.
+
+#+name: ur
+#+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
+end
+#+end_src
+
+And that's all there is to μLithp.  Enjoy.
 

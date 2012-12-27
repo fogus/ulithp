@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 14:19:10 EST"/>
+<meta name="generated" content="2012-12-27 16:43:20 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -93,7 +93,7 @@
 <div id="content">
 <h1 class="title">μLithp</h1>
 
-<p><i>μLithp</i> - a Lisp in 29 lines of Ruby <a href="http://www.github.com/fogus/ulithp">source</a>
+<p><i>μLithp</i> - a Lisp in 27 lines of Ruby <a href="http://www.github.com/fogus/ulithp">source</a>
 </p>
 
 
@@ -110,20 +110,182 @@ This is a line-by-line deconstruction of hom μLithp works, including commentary
 </div>
 
 <div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1">Line 1</h3>
+<h3 id="sec-1-1">The primordial functions and forms</h3>
 <div class="outline-text-3" id="text-1-1">
 
 
+
+
+
+<pre class="src src-ruby"><span style="color: #af00ff;">class</span> <span style="color: #008700;">Lisp</span>
+</pre>
+
+
 <p>
-TODO
+Ruby is one of <a href="http://c2.com/cgi/wiki?ArgumentsAgainstOop">those</a> kinds of languages, so everything starts with a class declaration. Kidding aside, I thought it would be cool to encapsulate Lispiness in a class a provide extension via inheritance, but never got around to trying it. 
 </p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">initialize</span>
+</pre>
+
+
+<p>
+The constructor seems like as good a place as any to declare the basic functionality.  Every mimimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
+</p>
+<ul>
+<li><code>label</code> : a way to bind a value to a name
+</li>
+<li><code>quote</code> : avoids evalutation of an expression
+</li>
+<li><code>car</code>   : retrieves the first element in a list
+</li>
+<li><code>cdr</code>   : retrieves all but the first element in a list
+</li>
+<li><code>cons</code>  : constructs a new list from some element appended to the front of some list
+</li>
+<li><code>eq</code>    : checks the equality of two values
+</li>
+<li><code>if</code>    : checks the truthiness of an expression and evaluates one of two branches depending on the result
+</li>
+<li><code>atom</code>  : checks if a value is a base value (i.e. not a composition type like a list)
+</li>
+<li><code>λ</code>     : creates a function
+</li>
+</ul>
+
+
+<p>
+I'll give more detail about each below.
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af5f00;">@env</span> = { <span style="color: #008787;">:label</span> =&gt; lambda { |(name,val), _| <span style="color: #af5f00;">@env</span>[name] = val },
+</pre>
+
+
+<p>
+Every Lisp evaluation takes place in the context of some environment.  In μLithp the environment is a simple Hash instance and represents a global evaluation context.  The <code>:label</code> symbol is bound to a <code>lambda</code> that takes two things, an Array with a symbol representing a name and a value and also a context (that is ignored).  The name is then inserted into the global environment with the given value.  As you can see, all bindings are created explicitly in <code>@env</code>.
+</p>
+<p>
+You'll notice that all of the ~lambda~s take an array as the first argument and a context as the second.  This is key for future expansion.  Additionally, I like to use Ruby's destructuring format to unwrap the actual arguments hidden in the passed array.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:car</span>   =&gt; lambda { |(list), _| list[0] },
+</pre>
+
+
+<p>
+The <code>:car</code> form returns the first element of its single argument.  In μLithp, lists are just Ruby arrays at the bottom.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:cdr</span>   =&gt; lambda { |(list), _| list.drop 1 },
+</pre>
+
+
+<p>
+The <code>:cdr</code> form takes a Ruby array and drops the first element.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:cons</span>  =&gt; lambda { |(e,cell), _| [e] + cell },
+</pre>
+
+
+<p>
+The <code>:cons</code> form takes some value and plops it onto the front of the array provided as the second argument.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:eq</span>    =&gt; lambda { |(l,r), _| l == r },
+</pre>
+
+
+<p>
+The <code>:eq</code> form takes two arguments and compares them for equality.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:if</span>    =&gt; lambda { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+</pre>
+
+
+<p>
+The <code>:if</code> form is the first that uses the <code>eval</code> method.  That is, it takes a value as its first argument, tests its truthiness and either evaluates its second argument if <code>true</code> or evaluates its third if <code>false</code>.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:atom</span>  =&gt; lambda { |(sexpr), _| (sexpr.is_a? <span style="color: #008700;">Symbol</span>) <span style="color: #af00ff;">or</span> (sexpr.is_a? <span style="color: #008700;">Numeric</span>) },
+</pre>
+
+
+<p>
+The <code>:atom</code> form tests for atomness (cannot be split).  Currently, the only two things that are atoms are Symbols and Numbers.  Numbers are a bit gratuitous because μLithp has no math operators.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:quote</span> =&gt; lambda { |sexpr, _| sexpr[0] } }
+</pre>
+
+
+<p>
+The <code>:quote</code> form just returns its first argument outright; without evaluation.
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's it for the primordial μLithp functions!  You might notice that I've not handled the <code>λ</code> form.  This little nasty is handled via voodoo later on.
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">apply</span> fn, args, ctx=<span style="color: #af5f00;">@env</span>
+</pre>
+
+
+
+
+
+<pre class="src src-ruby">    <span style="color: #af00ff;">return</span> <span style="color: #af5f00;">@env</span>[fn].call(args, ctx) <span style="color: #af00ff;">if</span> <span style="color: #af5f00;">@env</span>[fn].respond_to? <span style="color: #008787;">:call</span>
+    <span style="color: #af5f00;">self</span>.eval <span style="color: #af5f00;">@env</span>[fn][2], <span style="color: #008700;">Hash</span>[*(<span style="color: #af5f00;">@env</span>[fn][1].zip args).flatten(1)]
+  <span style="color: #af00ff;">end</span>
+
+  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">eval</span> sexpr, ctx=<span style="color: #af5f00;">@env</span>
+    <span style="color: #af00ff;">if</span> <span style="color: #af5f00;">@env</span>[<span style="color: #008787;">:atom</span>].call [sexpr], ctx
+      <span style="color: #af00ff;">return</span> ctx[sexpr] || sexpr
+    <span style="color: #af00ff;">end</span>
+
+    fn, *args = sexpr
+    args = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) } <span style="color: #af00ff;">if</span> <span style="color: #af00ff;">not</span> [<span style="color: #008787;">:quote</span>, <span style="color: #008787;">:if</span>].member? fn
+    apply(fn, args, ctx)
+  <span style="color: #af00ff;">end</span>
+<span style="color: #af00ff;">end</span>
+</pre>
+
+
 </div>
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 14:19:10 EST</p>
+<p class="date">Date: 2012-12-27 16:43:20 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
