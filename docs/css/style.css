@@ -1,0 +1,86 @@
+body {
+	padding: 50px 150px 50px 150px;
+}
+
+body, p, li {
+	font-family: monospace;
+	font-size: 1em;
+}
+
+#table-of-contents {
+    color: black;
+    background: #FFF;
+    font-size: 80%;
+    padding: .5em;
+    /*margin: 1em -2em 1em 1em;*/
+    float: right;
+    display: block;
+    border: 1px solid #CCC;
+    max-width: 50%;
+    overflow: auto;
+}
+
+#table-of-contents a  {
+    color: #003333;
+}
+
+#table-of-contents a:hover {
+    color: #003333;
+    text-decoration: underline;
+}
+
+#table-of-contents li {
+    margin: 0px;
+}
+
+#table-of-contents h2 {
+    border: none;
+}
+
+img {
+    border: 0px;
+}
+
+.title {
+    color: #990000;
+    padding-bottom: 7px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #222;
+}
+
+h2 {
+    padding-bottom: 4px;
+    margin-bottom: 5px;
+    border-bottom: 3px solid #DDD;
+}
+
+h3 {
+    color: #333333;
+}
+
+a {
+    text-decoration: none;
+    color: #006666
+}
+
+a:visited {
+    text-decoration: none;
+    color: #336666
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #003333
+}
+
+
+#postamble {
+	margin-top: 50px;
+	border-top: 1px solid #DDD;
+}
+
+#postamble p {
+	font-size: 0.75em;
+	margin: 0px;
+}
+
