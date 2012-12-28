@@ -14,7 +14,7 @@ class Reader
 
   def read
     if (token = next_token) == '('
-      parse_list
+      read_list
     elsif token =~ /['"].*/
       token[1..-2]
     elsif token =~ /\d+/
@@ -26,7 +26,7 @@ class Reader
 
   def read_list
     list = []
-    list << parse until peek == ')'
+    list << read until peek == ')'
     next_token
     list
   end

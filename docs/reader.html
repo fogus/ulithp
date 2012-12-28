@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp reader"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 22:21:14 EST"/>
+<meta name="generated" content="2012-12-27 23:12:35 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -107,7 +107,7 @@
 
 
 <p>
-TODO
+You can, if you choose, write μLithp code directly using Ruby arrays and symbols.  However, writing a reader that reads in a more traditional textual Lisp-like syntax and converts it into the Ruby data structures.  My friend <a href="http://www.eloquentruby.com">Russ Olsen</a> wrote a little reader, that I present below:
 </p>
 
 </div>
@@ -135,7 +135,7 @@ TODO
 
   <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">read</span>
     <span style="color: #af00ff;">if</span> (token = next_token) == <span style="color: #87005f;">'('</span>
-      parse_list
+      read_list
     <span style="color: #af00ff;">elsif</span> token =~ <span style="color: #87005f;">/['"].*/</span>
       token[1..-2]
     <span style="color: #af00ff;">elsif</span> token =~ <span style="color: #87005f;">/\d+/</span>
@@ -147,20 +147,50 @@ TODO
 
   <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">read_list</span>
     list = []
-    list &lt;&lt; parse <span style="color: #af00ff;">until</span> peek == <span style="color: #87005f;">')'</span>
+    list &lt;&lt; read <span style="color: #af00ff;">until</span> peek == <span style="color: #87005f;">')'</span>
     next_token
     list
   <span style="color: #af00ff;">end</span>
 <span style="color: #af00ff;">end</span>
 </pre>
 
+
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2">Usage</h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+Using the <code>Reader</code> class is simple as the following:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'lithp'</span>
+require <span style="color: #87005f;">'reader'</span>
+
+<span style="color: #008700;">Reader</span>.new(<span style="color: #87005f;">"(quote (1 2 3))"</span>).read
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [:quote, [1, 2, 3]]</span>
+
+l.eval <span style="color: #008700;">Reader</span>.new(<span style="color: #87005f;">"(quote (1 2 3))"</span>).read
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [1, 2, 3]</span>
+</pre>
+
+
+<p>
+And that's it.
+</p>
 </div>
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 22:21:14 EST</p>
+<p class="date">Date: 2012-12-27 23:12:35 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -12,11 +12,11 @@
 
 * Extending μLithp with a reader
 
-TODO
+You can, if you choose, write μLithp code directly using Ruby arrays and symbols.  However, writing a reader that reads in a more traditional textual Lisp-like syntax and converts it into the Ruby data structures.  My friend [[http://www.eloquentruby.com][Russ Olsen]] wrote a little reader, that I present below:
 
 ** Reader
 
-#+name: ur
+#+name: reader
 #+begin_src ruby :tangle ../src/reader.rb :noweb yes 
 class Reader
   def initialize(expression)
@@ -33,7 +33,7 @@ class Reader
 
   def read
     if (token = next_token) == '('
-      parse_list
+      read_list
     elsif token =~ /['"].*/
       token[1..-2]
     elsif token =~ /\d+/
@@ -45,9 +45,27 @@ class Reader
 
   def read_list
     list = []
-    list << parse until peek == ')'
+    list << read until peek == ')'
     next_token
     list
   end
 end
 #+end_src
+
+** Usage
+
+Using the ~Reader~ class is simple as the following:
+
+#+begin_src ruby
+require 'lithp'
+require 'reader'
+
+Reader.new("(quote (1 2 3))").read
+#=> [:quote, [1, 2, 3]]
+
+l.eval Reader.new("(quote (1 2 3))").read
+#=> [1, 2, 3]
+#+end_src
+
+And that's it.
+
