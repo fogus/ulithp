@@ -12,7 +12,7 @@
 
 * In the beginning was a fancy
 
-This is a line-by-line deconstruction of hom μLithp works, including commentary on extending the base language.
+This is a line-by-line deconstruction of how μLithp works, including commentary on extending the base language.
 
 ** The primordial functions and forms
 
@@ -28,10 +28,10 @@ Ruby is one of [[http://c2.com/cgi/wiki?ArgumentsAgainstOop][those]] kinds of la
   def initialize
 #+end_src
 
-The constructor seems like as good a place as any to declare the basic functionality.  Every mimimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
+The constructor seems like as good a place as any to declare the basic functionality.  Every minimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
 
  - ~label~ : a way to bind a value to a name
- - ~quote~ : avoids evalutation of an expression
+ - ~quote~ : avoids evaluation of an expression
  - ~car~   : retrieves the first element in a list
  - ~cdr~   : retrieves all but the first element in a list
  - ~cons~  : constructs a new list from some element appended to the front of some list
