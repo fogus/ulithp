@@ -1,0 +1,53 @@
+#+TITLE:     μLithp reader
+#+AUTHOR:    Fogus
+#+EMAIL:     me@fogus.me
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+#+INCLUDE: header/header.org org
+
+* Extending μLithp with a reader
+
+TODO
+
+** Reader
+
+#+name: ur
+#+begin_src ruby :tangle ../src/reader.rb :noweb yes 
+class SExpressionParser
+  def initialize(expression)
+    @tokens = expression.scan /[()]|\w+|".*?"|'.*?'/
+  end
+
+  def peek
+    @tokens.first
+  end
+
+  def next_token
+    @tokens.shift
+  end
+
+  def parse
+    if (token = next_token) == '('
+      parse_list
+    elsif token =~ /['"].*/
+      token[1..-2]
+    elsif token =~ /\d+/
+      token.to_i
+    else
+      token.to_sym
+    end
+  end
+
+  def parse_list
+    list = []
+    list << parse until peek == ')'
+    next_token
+    list
+  end
+end
+#+end_src

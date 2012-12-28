@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 19:50:19 EST"/>
+<meta name="generated" content="2012-12-27 21:59:56 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -130,7 +130,7 @@ Ruby is one of <a href="http://c2.com/cgi/wiki?ArgumentsAgainstOop">those</a> ki
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">def</span> <span style="color: #0000ff;">initialize</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">initialize</span>
 </pre>
 
 
@@ -165,7 +165,7 @@ I'll give more detail about each below.
 
 
 
-<pre class="src src-ruby"><span style="color: #af5f00;">@env</span> = { <span style="color: #008787;">:label</span> =&gt; proc { |(name,val), _| <span style="color: #af5f00;">@env</span>[name] = eval(val, <span style="color: #af5f00;">@env</span>) },
+<pre class="src src-ruby">    <span style="color: #af5f00;">@env</span> = { <span style="color: #008787;">:label</span> =&gt; proc { |(name,val), _| <span style="color: #af5f00;">@env</span>[name] = eval(val, <span style="color: #af5f00;">@env</span>) },
 </pre>
 
 
@@ -178,7 +178,7 @@ You'll notice that all of the callable's take an array as the first argument and
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:car</span>   =&gt; lambda { |(list), _| list[0] },
+<pre class="src src-ruby">             <span style="color: #008787;">:car</span>   =&gt; lambda { |(list), _| list[0] },
 </pre>
 
 
@@ -188,7 +188,7 @@ The <code>:car</code> form returns the first element of its single argument.  In
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:cdr</span>   =&gt; lambda { |(list), _| list.drop 1 },
+<pre class="src src-ruby">             <span style="color: #008787;">:cdr</span>   =&gt; lambda { |(list), _| list.drop 1 },
 </pre>
 
 
@@ -198,7 +198,7 @@ The <code>:cdr</code> form takes a Ruby array and drops the first element.
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:cons</span>  =&gt; lambda { |(e,cell), _| [e] + cell },
+<pre class="src src-ruby">             <span style="color: #008787;">:cons</span>  =&gt; lambda { |(e,cell), _| [e] + cell },
 </pre>
 
 
@@ -208,7 +208,7 @@ The <code>:cons</code> form takes some value and plops it onto the front of the 
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:eq</span>    =&gt; lambda { |(l,r), _| l == r },
+<pre class="src src-ruby">             <span style="color: #008787;">:eq</span>    =&gt; lambda { |(l,r), _| l == r },
 </pre>
 
 
@@ -218,7 +218,7 @@ The <code>:eq</code> form takes two arguments and compares them for equality.
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:if</span>    =&gt; proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+<pre class="src src-ruby">             <span style="color: #008787;">:if</span>    =&gt; proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
 </pre>
 
 
@@ -228,7 +228,7 @@ The <code>:if</code> form is the first that uses the <code>eval</code> method.  
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:atom</span>  =&gt; lambda { |(sexpr), _| (sexpr.is_a? <span style="color: #008700;">Symbol</span>) <span style="color: #af00ff;">or</span> (sexpr.is_a? <span style="color: #008700;">Numeric</span>) },
+<pre class="src src-ruby">             <span style="color: #008787;">:atom</span>  =&gt; lambda { |(sexpr), _| (sexpr.is_a? <span style="color: #008700;">Symbol</span>) <span style="color: #af00ff;">or</span> (sexpr.is_a? <span style="color: #008700;">Numeric</span>) },
 </pre>
 
 
@@ -238,7 +238,7 @@ The <code>:atom</code> form tests for atomness (cannot be split).  Currently, th
 
 
 
-<pre class="src src-ruby"><span style="color: #008787;">:quote</span> =&gt; proc { |sexpr, _| sexpr[0] } }
+<pre class="src src-ruby">             <span style="color: #008787;">:quote</span> =&gt; proc { |sexpr, _| sexpr[0] } }
 </pre>
 
 
@@ -248,7 +248,7 @@ The <code>:quote</code> form just returns its first argument outright; without e
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">end</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
 </pre>
 
 
@@ -267,7 +267,7 @@ And that's it for the primordial μLithp functions!  You might notice that I've 
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">def</span> <span style="color: #0000ff;">apply</span> fn, args, ctx=<span style="color: #af5f00;">@env</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">apply</span> fn, args, ctx=<span style="color: #af5f00;">@env</span>
 </pre>
 
 
@@ -277,7 +277,7 @@ Now starts one of the two mutually recursive functions required to implement any
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">return</span> ctx[fn].call(args, ctx) <span style="color: #af00ff;">if</span> ctx[fn].respond_to? <span style="color: #008787;">:call</span>
+<pre class="src src-ruby">    <span style="color: #af00ff;">return</span> ctx[fn].call(args, ctx) <span style="color: #af00ff;">if</span> ctx[fn].respond_to? <span style="color: #008787;">:call</span>
 </pre>
 
 
@@ -287,7 +287,7 @@ The first thing that I try is to look up the named function in the provided cont
 
 
 
-<pre class="src src-ruby"><span style="color: #af5f00;">self</span>.eval ctx[fn][2], <span style="color: #008700;">Hash</span>[*(ctx[fn][1].zip args).flatten(1)]
+<pre class="src src-ruby">    <span style="color: #af5f00;">self</span>.eval ctx[fn][2], ctx.merge(<span style="color: #008700;">Hash</span>[*(ctx[fn][1].zip args).flatten(1)])
 </pre>
 
 
@@ -297,7 +297,7 @@ If what was provided was not a Ruby callable, then I need to perform some magic.
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">end</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
 </pre>
 
 
@@ -316,7 +316,7 @@ And that's all there is to <code>apply</code>.  Freaking sweet!
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">def</span> <span style="color: #0000ff;">eval</span> sexpr, ctx=<span style="color: #af5f00;">@env</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">eval</span> sexpr, ctx=<span style="color: #af5f00;">@env</span>
 </pre>
 
 
@@ -326,7 +326,7 @@ The second mutually recursive function needed for a Lisp is <code>eval</code>.  
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">if</span> ctx[<span style="color: #008787;">:atom</span>].call [sexpr], ctx
+<pre class="src src-ruby">    <span style="color: #af00ff;">if</span> ctx[<span style="color: #008787;">:atom</span>].call [sexpr], ctx
 </pre>
 
 
@@ -336,7 +336,7 @@ The first thing to check in the course of evaluation is if the form provided is 
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">return</span> ctx[sexpr] || sexpr
+<pre class="src src-ruby">      <span style="color: #af00ff;">return</span> ctx[sexpr] || sexpr
 </pre>
 
 
@@ -346,7 +346,7 @@ If the form given <i>was</i> and atom then it might be a symbol bound to a value
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">end</span>
+<pre class="src src-ruby">    <span style="color: #af00ff;">end</span>
 </pre>
 
 
@@ -356,7 +356,7 @@ And that's all that needs done for atoms.
 
 
 
-<pre class="src src-ruby">fn, *args = sexpr
+<pre class="src src-ruby">    fn, *args = sexpr
 </pre>
 
 
@@ -366,7 +366,7 @@ So if it wasn't an atom then it must be an executable thing right?  Working unde
 
 
 
-<pre class="src src-ruby">args = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) } <span style="color: #af00ff;">if</span> ctx[fn].lambda?
+<pre class="src src-ruby">    args = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) } <span style="color: #af00ff;">if</span> ctx[fn].is_a?(<span style="color: #008700;">Array</span>) || (ctx[fn].respond_to?(<span style="color: #008787;">:lambda?</span>) &amp;&amp; ctx[fn].lambda?)
 </pre>
 
 
@@ -376,7 +376,7 @@ So if it wasn't an atom then it must be an executable thing right?  Working unde
 
 
 
-<pre class="src src-ruby">apply(fn, args, ctx)
+<pre class="src src-ruby">    apply(fn, args, ctx)
 </pre>
 
 
@@ -386,7 +386,7 @@ Now that I have the symbol naming a function and its evaluated arguments, I just
 
 
 
-<pre class="src src-ruby"><span style="color: #af00ff;">end</span>
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
 </pre>
 
 
@@ -404,12 +404,63 @@ And that's all there is to <code>eval</code>.
 And that's all there is to μLithp.  Enjoy.
 </p>
 </div>
+
+</div>
+
+<div id="outline-container-1-4" class="outline-3">
+<h3 id="sec-1-4">Using</h3>
+<div class="outline-text-3" id="text-1-4">
+
+
+<p>
+Below is a sample IRB session using μLithp:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'lithp.rb'</span>
+
+l = <span style="color: #008700;">Lisp</span>.new
+
+l.eval [<span style="color: #008787;">:label</span>, <span style="color: #008787;">:a</span>, 42]
+
+l.eval <span style="color: #008787;">:a</span>
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 42</span>
+
+l.eval [<span style="color: #008787;">:eq</span>, 42, <span style="color: #008787;">:a</span>]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; true</span>
+
+l.eval [<span style="color: #008787;">:quote</span>, [1, 2]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [1, 2]</span>
+
+l.eval [<span style="color: #008787;">:car</span>, [<span style="color: #008787;">:quote</span>, [1, 2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 1</span>
+
+l.eval [<span style="color: #008787;">:cdr</span>, [<span style="color: #008787;">:quote</span>, [1, 2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [2]</span>
+
+l.eval [<span style="color: #008787;">:cons</span>, 1, [<span style="color: #008787;">:quote</span>, [2,3]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [1, 2, 3]</span>
+
+l.eval [<span style="color: #008787;">:if</span>, [<span style="color: #008787;">:eq</span>, 1, 2], 42, 43]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 43</span>
+
+l.eval [<span style="color: #008787;">:atom</span>, [<span style="color: #008787;">:quote</span>, [1,2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; false</span>
+
+l.eval [<span style="color: #008787;">:label</span>, <span style="color: #008787;">:second</span>, [<span style="color: #008787;">:quote</span>, [<span style="color: #008787;">:lambda</span>, [<span style="color: #008787;">:x</span>],   [<span style="color: #008787;">:car</span>, [<span style="color: #008787;">:cdr</span>, <span style="color: #008787;">:x</span>]]]]]
+
+l.eval [<span style="color: #008787;">:second</span>, [<span style="color: #008787;">:quote</span>, [1, 2, 3]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 2</span>
+</pre>
+
+</div>
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 19:50:19 EST</p>
+<p class="date">Date: 2012-12-27 21:59:56 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

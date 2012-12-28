@@ -1,6 +1,3 @@
-# by Russ Olsen
-# http://eloquentruby.com
-
 class SExpressionParser
   def initialize(expression)
     @tokens = expression.scan /[()]|\w+|".*?"|'.*?'/

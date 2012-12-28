@@ -1,0 +1,33 @@
+#+TITLE:     μLithp REPL
+#+AUTHOR:    Fogus
+#+EMAIL:     me@fogus.me
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+#+INCLUDE: header/header.org org
+
+* Extending μLithp with a Read-Eval-Print-Loop (REPL)
+
+TODO
+
+** REPL
+
+#+name: ur
+#+begin_src ruby :tangle ../src/repl.rb :noweb yes 
+require 'lithp'
+require 'reader'
+
+lisp = Lisp.new
+
+print "> "
+while not $stdin.eof?
+  line = readline
+  s_expression = SExpressionParser.new(line).parse
+  p lisp.eval(s_expression)
+  print "> "
+end
+#+end_src

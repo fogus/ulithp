@@ -1,5 +1,3 @@
-# by Russ Olsen
-# http://eloquentruby.com
 
 require 'lithp'
 require 'reader'

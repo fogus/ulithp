@@ -125,7 +125,7 @@ The first thing that I try is to look up the named function in the provided cont
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-    self.eval ctx[fn][2], Hash[*(ctx[fn][1].zip args).flatten(1)]
+    self.eval ctx[fn][2], ctx.merge(Hash[*(ctx[fn][1].zip args).flatten(1)])
 #+end_src
 
 If what was provided was not a Ruby callable, then I need to perform some magic.  What happens is that I look up the form stored at the symbol provided and get its third argument.  For a μLithp function of the conceptual form ~(lambda (x y) ...body...)~ this corresponds to the body of the function.  After retrieving the body I then evaluate it in the context provided adorned with the bindings provided as arguments to the function zipped up with the original function's named parameters.  This is the aforementioned voodoo regarding the ~lambda~ form.  What I'm doing is working under the assumption that a function was previously bound using ~:label~ in a certain format: ~[:anything, [:arg1, :arg2], [:frob, :arg1, :arg2]]~.  Magic!
@@ -176,7 +176,7 @@ So if it wasn't an atom then it must be an executable thing right?  Working unde
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-    args = args.map { |a| self.eval(a, ctx) } if ctx[fn].lambda?
+    args = args.map { |a| self.eval(a, ctx) } if ctx[fn].is_a?(Array) || (ctx[fn].respond_to?(:lambda?) && ctx[fn].lambda?)
 #+end_src
 
 μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated /before/ the function is called.  However, I do not evaluate if the form under evaluation is a ~Proc~ created with ~proc~ (i.e. ~:label~, ~:quote~ or ~:if~).  Ruby hackery, FTW!
@@ -202,3 +202,43 @@ end
 
 And that's all there is to μLithp.  Enjoy.
 
+** Using
+
+Below is a sample IRB session using μLithp:
+
+#+begin_src ruby
+require 'lithp.rb'
+
+l = Lisp.new
+
+l.eval [:label, :a, 42]
+
+l.eval :a
+#=> 42
+
+l.eval [:eq, 42, :a]
+#=> true
+
+l.eval [:quote, [1, 2]]
+#=> [1, 2]
+
+l.eval [:car, [:quote, [1, 2]]]
+#=> 1
+
+l.eval [:cdr, [:quote, [1, 2]]]
+#=> [2]
+
+l.eval [:cons, 1, [:quote, [2,3]]]
+#=> [1, 2, 3]
+
+l.eval [:if, [:eq, 1, 2], 42, 43]
+#=> 43
+
+l.eval [:atom, [:quote, [1,2]]]
+#=> false
+
+l.eval [:label, :second, [:quote, [:lambda, [:x],   [:car, [:cdr, :x]]]]]
+
+l.eval [:second, [:quote, [1, 2, 3]]]
+#=> 2
+#+end_src
