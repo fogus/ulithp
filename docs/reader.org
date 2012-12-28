@@ -32,6 +32,8 @@ class Reader
   end
 
   def read
+    return :"no more forms" if @tokens.empty?
+
     if (token = next_token) == '('
       read_list
     elsif token =~ /['"].*/

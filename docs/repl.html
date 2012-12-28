@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp REPL"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 23:25:07 EST"/>
+<meta name="generated" content="2012-12-28 14:45:37 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -107,7 +107,7 @@
 
 
 <p>
-Again my friend <a href="http://www.eloquentruby.com">Russ Olsen</a> took some time to play with μLithp and wrote a little REPL, shown below:
+My good friend <a href="http://www.eloquentruby.com">Russ Olsen</a> took some time to play with μLithp and wrote a little REPL.  I extended it a bit to load a core library if it exists, as shown below:
 </p>
 
 </div>
@@ -125,12 +125,21 @@ require <span style="color: #87005f;">'reader'</span>
 
 lisp = <span style="color: #008700;">Lisp</span>.new
 
-print <span style="color: #87005f;">"&gt; "</span>
+<span style="color: #af00ff;">if</span> <span style="color: #008700;">File</span>.exist?(<span style="color: #87005f;">"core.ulithp"</span>)
+  source = <span style="color: #008700;">File</span>.open(<span style="color: #87005f;">"core.ulithp"</span>, <span style="color: #87005f;">"r"</span>).read
+  forms = <span style="color: #008700;">Marshal</span>.load(source)
+
+  forms.each { |form| puts <span style="color: #87005f;">"</span><span style="color: #af5f00;">#{form}</span><span style="color: #87005f;">"</span> ; lisp.eval(form) }
+
+  puts <span style="color: #87005f;">"Done loading core library containing </span><span style="color: #af5f00;">#{forms.length}</span><span style="color: #87005f;"> forms."</span>
+<span style="color: #af00ff;">end</span>
+
+print <span style="color: #87005f;">"ulithp&gt; "</span>
 <span style="color: #af00ff;">while</span> <span style="color: #af00ff;">not</span> <span style="color: #af5f00;">$stdin</span>.eof?
   line = readline
   s_expression = <span style="color: #008700;">Reader</span>.new(line).read
   p lisp.eval(s_expression)
-  print <span style="color: #87005f;">"&gt; "</span>
+  print <span style="color: #87005f;">"ulithp&gt; "</span>
 <span style="color: #af00ff;">end</span>
 </pre>
 
@@ -181,7 +190,7 @@ Fun!
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 23:25:07 EST</p>
+<p class="date">Date: 2012-12-28 14:45:37 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

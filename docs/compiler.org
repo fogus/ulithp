@@ -12,11 +12,65 @@
 
 * Extending μLithp with a compiler
 
-TODO
+For the ultimate in ridiculousness, one could compile Lisp s-expressions into μLithp source code fairly easily, as shown below:
 
 ** Compiler
 
-#+name: ur
+#+name: compiler
 #+begin_src ruby :tangle ../src/compiler.rb :noweb yes 
-# TODO
+require 'reader'
+
+puts "Compiling: #{ARGV[0]}"
+
+filename = ARGV[0]
+source = File.open(filename, "r").read
+
+reader = Reader.new(source)
+forms = []
+
+while((form = reader.read) != :"no more forms")
+  forms << form
+end
+
+compiled_forms = Marshal.dump(forms)
+outfile = filename.gsub /lisp/, 'ulithp'
+
+puts "Writing #{forms.size} forms to #{outfile}"
+
+File.open(outfile, 'w') { |f| f.write(compiled_forms) }
 #+end_src
+
+Now, starting with a very basic core lirary:
+
+#+name: compiler
+#+begin_src lisp :tangle ../src/core.lisp :noweb yes 
+(label second (quote (lambda (l) (car (cdr l)))))
+
+(label third (quote (lambda (l) (car (cdr (cdr l))))))
+#+end_src
+
+We can build a μLithp compatible core with the following:
+
+#+name: compiler
+#+begin_src sh
+> ruby -I . compiler.rb core.lisp
+
+Compiling: core.lisp
+Writing 2 forms to core.ulithp
+#+end_src
+
+Now that ~core.ulithp~ is in place the REPL will find it and load it up:
+
+#+name: compiler
+#+begin_src sh
+> ruby -I . repl.rb
+
+[:label, :second, [:quote, [:lambda, [:l], [:car, [:cdr, :l]]]]]
+[:label, :third, [:quote, [:lambda, [:l], [:car, [:cdr, [:cdr, :l]]]]]]
+Done loading core library containing 2 forms.
+ulithp> (third (quote (1 2 3)))
+3
+#+end_src
+
+Oh my glob!
+

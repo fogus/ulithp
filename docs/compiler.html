@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp compiler"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 22:14:03 EST"/>
+<meta name="generated" content="2012-12-28 14:45:08 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -107,7 +107,7 @@
 
 
 <p>
-TODO
+For the ultimate in ridiculousness, one could compile Lisp s-expressions into μLithp source code fairly easily, as shown below:
 </p>
 
 </div>
@@ -120,16 +120,80 @@ TODO
 
 
 
-<pre class="src src-ruby"><span style="color: #af0000;"># </span><span style="color: #af0000;">TODO</span>
+<pre class="src src-ruby">require <span style="color: #87005f;">'reader'</span>
+
+puts <span style="color: #87005f;">"Compiling: </span><span style="color: #af5f00;">#{ARGV[0]}</span><span style="color: #87005f;">"</span>
+
+filename = <span style="color: #008700;">ARGV</span>[0]
+source = <span style="color: #008700;">File</span>.open(filename, <span style="color: #87005f;">"r"</span>).read
+
+reader = <span style="color: #008700;">Reader</span>.new(source)
+forms = []
+
+<span style="color: #af00ff;">while</span>((form = reader.read) != :<span style="color: #87005f;">"no more forms"</span>)
+  forms &lt;&lt; form
+<span style="color: #af00ff;">end</span>
+
+compiled_forms = <span style="color: #008700;">Marshal</span>.dump(forms)
+outfile = filename.gsub <span style="color: #87005f;">/lisp/</span>, <span style="color: #87005f;">'ulithp'</span>
+
+puts <span style="color: #87005f;">"Writing </span><span style="color: #af5f00;">#{forms.size}</span><span style="color: #87005f;"> forms to </span><span style="color: #af5f00;">#{outfile}</span><span style="color: #87005f;">"</span>
+
+<span style="color: #008700;">File</span>.open(outfile, <span style="color: #87005f;">'w'</span>) { |f| f.write(compiled_forms) }
 </pre>
 
+
+<p>
+Now, starting with a very basic core lirary:
+</p>
+
+
+
+<pre class="src src-lisp">(label second (quote (<span style="color: #af00ff;">lambda</span> (l) (car (cdr l)))))
+
+(label third (quote (<span style="color: #af00ff;">lambda</span> (l) (car (cdr (cdr l))))))
+</pre>
+
+
+<p>
+We can build a μLithp compatible core with the following:
+</p>
+
+
+
+<pre class="src src-sh">&gt; ruby -I . compiler.rb core.lisp
+
+Compiling: core.lisp
+Writing 2 forms to core.ulithp
+</pre>
+
+
+<p>
+Now that <code>core.ulithp</code> is in place the REPL will find it and load it up:
+</p>
+
+
+
+<pre class="src src-sh">&gt; ruby -I . repl.rb
+
+[:label, :second, [:quote, [:lambda, [:l], [:car, [:cdr, :l]]]]]
+[:label, :third, [:quote, [:lambda, [:l], [:car, [:cdr, [:cdr, :l]]]]]]
+Done loading core library containing 2 forms.
+ulithp&gt; (third (quote (1 2 3)))
+3
+</pre>
+
+
+<p>
+Oh my glob!
+</p>
 </div>
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 22:14:03 EST</p>
+<p class="date">Date: 2012-12-28 14:45:08 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
