@@ -25,7 +25,7 @@ Ruby is one of [[http://c2.com/cgi/wiki?ArgumentsAgainstOop][those]] kinds of la
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-  def initialize
+  def initialize(ext={})
 #+end_src
 
 The constructor seems like as good a place as any to declare the basic functionality.  Every minimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
@@ -95,10 +95,10 @@ The ~:atom~ form tests for atomness (cannot be split).  Currently, the only two 
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-             :quote => proc { |sexpr, _| sexpr[0] } }
+             :quote => proc { |sexpr, _| sexpr[0] } }.merge(ext)
 #+end_src
 
-The ~:quote~ form just returns its first argument outright; without evaluation.
+The ~:quote~ form just returns its first argument outright; without evaluation.  Also, if an extension Hash was given, it's merged into the global environment.
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 

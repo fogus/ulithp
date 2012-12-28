@@ -1,4 +1,3 @@
-
 require 'reader'
 
 puts "Compiling: #{ARGV[0]}"

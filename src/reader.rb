@@ -1,4 +1,3 @@
-
 class Reader
   def initialize(expression)
     @tokens = expression.scan /[()]|\w+|".*?"|'.*?'/

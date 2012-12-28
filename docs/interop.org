@@ -12,11 +12,83 @@
 
 * Extending μLithp with Ruby interop
 
-TODO
+Since μLithp is built on Ruby, it would be nice to be able to access the underlying language classes for silly purposes.  Fortunately, extending μLithp to handle Ruby interop is a matter of inheritance:
 
-** ~.~
-
-#+name: ur
+#+name: interop
 #+begin_src ruby :tangle ../src/interop.rb :noweb yes 
-# TODO
+require 'lithp'
+
+class ULithp < Lisp
+  def initialize()
 #+end_src
+
+Extending the ~Lisp~ class like this allows one to enhance the basic offerings (i.e. the 9 core forms) with other capabilities.  For interop purposes, I'll add two special forms: ~new~ and ~invoke~.
+
+** ~:new~
+
+The ~:new~ special form is used to create instances of Ruby classes.  The Lispy syntax of ~:new~ is ~(new Classname arg1 arg2)~.  Adding ~new~ is pretty straight-forward:
+
+#+name: interop
+#+begin_src ruby :tangle ../src/interop.rb :noweb yes 
+    @add = {:new => proc { |(klass, *args), ctx| 
+                              eargs = args.map { |a| self.eval(a, ctx) }
+                              Kernel.const_get(klass).new(*eargs)},  
+#+end_src
+
+Of course, I do not want to selectively evaluate certain parts of the ~:new~ form, specifically the arguments to the constructor.  This allows me to use ~:new~ in the following ways:
+
+#+begin_src ruby
+require 'interop'
+
+l = ULithp.new
+
+l.eval [:new, :Array, 2]
+#=> [nil, nil]
+
+l.eval [:new, :Array, [:car, [:quote, [3, 2, 1]]]]
+#=> [nil, nil, nil]
+#+end_src
+
+These are of limited use without a way to invoke methods on them.  Currently, I'll show how to create another special form named ~:invoke~.
+
+** ~invoke~
+
+Creating a special form to invoke instance methods is just a bit harder than ~:new~, and is as follows:
+
+#+Name: interop
+#+begin_src ruby :tangle ../src/interop.rb :noweb yes 
+            :invoke => proc { |(instance, meth, *args), ctx| 
+                              eargs = args.map { |a| self.eval(a, ctx) }
+                              einst = self.eval(instance, ctx)
+                              einst.send(meth, *args)}
+    }
+
+    super(@add)
+  end
+end
+#+end_src
+
+The ~Proc~ used for implementation selectively evaluates the instance and the method's arguments.  This allows me to use ~:invoke~ as follows:
+
+#+begin_src ruby
+require 'interop'
+
+l = ULithp.new
+
+l.eval [:label, :r, [:new, :Range, 0, 10]]
+
+l.eval :r
+#=> 0..10
+
+l.eval [:invoke, :r, :last]
+#=> 10
+
+l.eval [:invoke, :r, :include?, 5]
+#=> true
+
+l.eval [:invoke, [:new, :Range, 0, 10], :include?, 15]
+#=> false
+#+end_src
+
+And just like that, μLithp has a rudimentary interop story.
+

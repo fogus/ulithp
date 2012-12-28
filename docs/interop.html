@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp interop"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 22:16:53 EST"/>
+<meta name="generated" content="2012-12-28 15:40:26 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -107,29 +107,125 @@
 
 
 <p>
-TODO
+Since μLithp is built on Ruby, it would be nice to be able to access the underlying language classes for silly purposes.  Fortunately, extending μLithp to handle Ruby interop is a matter of inheritance:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'lithp'</span>
+
+<span style="color: #af00ff;">class</span> <span style="color: #008700;">ULithp</span> &lt; <span style="color: #008700;">Lisp</span>
+  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">initialize</span>()
+</pre>
+
+
+<p>
+Extending the <code>Lisp</code> class like this allows one to enhance the basic offerings (i.e. the 9 core forms) with other capabilities.  For interop purposes, I'll add two special forms: <code>new</code> and <code>invoke</code>.
 </p>
 
 </div>
 
 <div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><code>.</code></h3>
+<h3 id="sec-1-1"><code>:new</code></h3>
 <div class="outline-text-3" id="text-1-1">
 
 
+<p>
+The <code>:new</code> special form is used to create instances of Ruby classes.  The Lispy syntax of <code>:new</code> is <code>(new Classname arg1 arg2)</code>.  Adding <code>new</code> is pretty straight-forward:
+</p>
 
 
 
-<pre class="src src-ruby"><span style="color: #af0000;"># </span><span style="color: #af0000;">TODO</span>
+<pre class="src src-ruby">    <span style="color: #af5f00;">@add</span> = {<span style="color: #008787;">:new</span> =&gt; proc { |(klass, *args), ctx| 
+                              eargs = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) }
+                              <span style="color: #008700;">Kernel</span>.const_get(klass).new(*eargs)},  
 </pre>
 
+
+<p>
+Of course, I do not want to selectively evaluate certain parts of the <code>:new</code> form, specifically the arguments to the constructor.  This allows me to use <code>:new</code> in the following ways:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'interop'</span>
+
+l = <span style="color: #008700;">ULithp</span>.new
+
+l.eval [<span style="color: #008787;">:new</span>, :<span style="color: #008700;">Array</span>, 2]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [nil, nil]</span>
+
+l.eval [<span style="color: #008787;">:new</span>, :<span style="color: #008700;">Array</span>, [<span style="color: #008787;">:car</span>, [<span style="color: #008787;">:quote</span>, [3, 2, 1]]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [nil, nil, nil]</span>
+</pre>
+
+
+<p>
+These are of limited use without a way to invoke methods on them.  Currently, I'll show how to create another special form named <code>:invoke</code>.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><code>invoke</code></h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+<p>
+Creating a special form to invoke instance methods is just a bit harder than <code>:new</code>, and is as follows:
+</p>
+
+
+
+<pre class="src src-ruby">            <span style="color: #008787;">:invoke</span> =&gt; proc { |(instance, meth, *args), ctx| 
+                              eargs = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) }
+                              einst = <span style="color: #af5f00;">self</span>.eval(instance, ctx)
+                              einst.send(meth, *args)}
+    }
+
+    <span style="color: #af00ff;">super</span>(<span style="color: #af5f00;">@add</span>)
+  <span style="color: #af00ff;">end</span>
+<span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+The <code>Proc</code> used for implementation selectively evaluates the instance and the method's arguments.  This allows me to use <code>:invoke</code> as follows:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'interop'</span>
+
+l = <span style="color: #008700;">ULithp</span>.new
+
+l.eval [<span style="color: #008787;">:label</span>, <span style="color: #008787;">:r</span>, [<span style="color: #008787;">:new</span>, :<span style="color: #008700;">Range</span>, 0, 10]]
+
+l.eval <span style="color: #008787;">:r</span>
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 0..10</span>
+
+l.eval [<span style="color: #008787;">:invoke</span>, <span style="color: #008787;">:r</span>, <span style="color: #008787;">:last</span>]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 10</span>
+
+l.eval [<span style="color: #008787;">:invoke</span>, <span style="color: #008787;">:r</span>, <span style="color: #008787;">:include?</span>, 5]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; true</span>
+
+l.eval [<span style="color: #008787;">:invoke</span>, [<span style="color: #008787;">:new</span>, :<span style="color: #008700;">Range</span>, 0, 10], <span style="color: #008787;">:include?</span>, 15]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; false</span>
+</pre>
+
+
+<p>
+And just like that, μLithp has a rudimentary interop story.
+</p>
 </div>
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 22:16:53 EST</p>
+<p class="date">Date: 2012-12-28 15:40:26 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

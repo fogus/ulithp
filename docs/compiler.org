@@ -40,7 +40,7 @@ puts "Writing #{forms.size} forms to #{outfile}"
 File.open(outfile, 'w') { |f| f.write(compiled_forms) }
 #+end_src
 
-Now, starting with a very basic core lirary:
+Now, starting with a very basic core library:
 
 #+name: compiler
 #+begin_src lisp :tangle ../src/core.lisp :noweb yes 

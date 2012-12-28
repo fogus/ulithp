@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
 <meta name="title" content="μLithp reader"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-12-27 23:12:35 EST"/>
+<meta name="generated" content="2012-12-28 15:42:16 EST"/>
 <meta name="author" content="Fogus"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -134,6 +134,8 @@ You can, if you choose, write μLithp code directly using Ruby arrays and symbol
   <span style="color: #af00ff;">end</span>
 
   <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">read</span>
+    <span style="color: #af00ff;">return</span> :<span style="color: #87005f;">"no more forms"</span> <span style="color: #af00ff;">if</span> <span style="color: #af5f00;">@tokens</span>.empty?
+
     <span style="color: #af00ff;">if</span> (token = next_token) == <span style="color: #87005f;">'('</span>
       read_list
     <span style="color: #af00ff;">elsif</span> token =~ <span style="color: #87005f;">/['"].*/</span>
@@ -190,7 +192,7 @@ And that's it.
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-12-27 23:12:35 EST</p>
+<p class="date">Date: 2012-12-28 15:42:16 EST</p>
 <p class="author">Author: Fogus</p>
 <p class="creator">Org version 7.8.11 with Emacs version 24</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

@@ -1,5 +1,5 @@
 class Lisp
-  def initialize
+  def initialize(ext={})
     @env = { :label => proc { |(name,val), _| @env[name] = eval(val, @env) },
              :car   => lambda { |(list), _| list[0] },
              :cdr   => lambda { |(list), _| list.drop 1 },
@@ -7,7 +7,7 @@ class Lisp
              :eq    => lambda { |(l,r), _| l == r },
              :if    => proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
              :atom  => lambda { |(sexpr), _| (sexpr.is_a? Symbol) or (sexpr.is_a? Numeric) },
-             :quote => proc { |sexpr, _| sexpr[0] } }
+             :quote => proc { |sexpr, _| sexpr[0] } }.merge(ext)
   end
 
   def apply fn, args, ctx=@env
