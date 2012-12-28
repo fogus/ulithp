@@ -1,6 +1,6 @@
 # μLithp
 
-### [Official website](http://fogus.github.com/ulithp)
+### [Official website and deep analysis](http://fogus.github.com/ulithp)
 
 A micro LISP implementation in 27 lines of Ruby, with a reader in 33 lines, REPL in 19 lines, a compiler in 15 lines and Ruby interop in 13 lines.  Really frickin' small.
 
@@ -15,6 +15,8 @@ A micro LISP implementation in 27 lines of Ruby, with a reader in 33 lines, REPL
 * `lambda`
 
 See the `src/lithp.rb` file for source and `doc/index.org` for implementation details and the original announcement in the  [μLithp blog post](http://blog.fogus.me/2012/01/25/lisp-in-40-lines-of-ruby/).
+
+*this is my entry into the December 2012 [PLT Games](http://www.pltgames.com)*
 
 ## Embedded usage
 
