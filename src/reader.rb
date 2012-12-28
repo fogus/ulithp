@@ -1,4 +1,5 @@
-class SExpressionParser
+
+class Reader
   def initialize(expression)
     @tokens = expression.scan /[()]|\w+|".*?"|'.*?'/
   end
@@ -11,7 +12,7 @@ class SExpressionParser
     @tokens.shift
   end
 
-  def parse
+  def read
     if (token = next_token) == '('
       parse_list
     elsif token =~ /['"].*/
@@ -23,7 +24,7 @@ class SExpressionParser
     end
   end
 
-  def parse_list
+  def read_list
     list = []
     list << parse until peek == ')'
     next_token
