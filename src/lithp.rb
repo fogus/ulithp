@@ -3,7 +3,7 @@ class Lisp
 
 def initialize
 
-@env = { :label => lambda { |(name,val), _| @env[name] = val },
+@env = { :label => proc { |(name,val), _| @env[name] = eval(val, @env) },
 
 :car   => lambda { |(list), _| list[0] },
 
@@ -13,11 +13,11 @@ def initialize
 
 :eq    => lambda { |(l,r), _| l == r },
 
-:if    => lambda { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+:if    => proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
 
 :atom  => lambda { |(sexpr), _| (sexpr.is_a? Symbol) or (sexpr.is_a? Numeric) },
 
-:quote => lambda { |sexpr, _| sexpr[0] } }
+:quote => proc { |sexpr, _| sexpr[0] } }
 
 end
 
@@ -39,7 +39,7 @@ end
 
 fn, *args = sexpr
 
-args = args.map { |a| self.eval(a, ctx) } if not [:quote, :if].member? fn
+args = args.map { |a| self.eval(a, ctx) } if ctx[fn].lambda?
 
 apply(fn, args, ctx)
 

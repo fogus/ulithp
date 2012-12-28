@@ -44,12 +44,12 @@ I'll give more detail about each below.
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-    @env = { :label => lambda { |(name,val), _| @env[name] = val },
+    @env = { :label => proc { |(name,val), _| @env[name] = eval(val, @env) },
 #+end_src
 
-Every Lisp evaluation takes place in the context of some environment.  In μLithp the environment is a simple Hash instance and represents a global evaluation context.  The ~:label~ symbol is bound to a ~lambda~ that takes two things, an Array with a symbol representing a name and a value and also a context (that is ignored).  The name is then inserted into the global environment with the given value.  As you can see, all bindings are created explicitly in ~@env~.
+Every Lisp evaluation takes place in the context of some environment.  In μLithp the environment is a simple Hash instance and represents a global evaluation context.  The ~:label~ symbol is bound to a ~lambda~ that takes two things, an Array with a symbol representing a name and a value and also a context (that is ignored).  The name is then inserted into the global environment with the given value.  As you can see, all bindings are created explicitly in ~@env~.  You'll notice that I created the ~:if~ logic with the ~proc~ form.  Doing so signals to the evaluator that the thing defined should receive its arguments unevaluated.
 
-You'll notice that all of the ~lambda~s take an array as the first argument and a context as the second.  This is key for future expansion.  Additionally, I like to use Ruby's destructuring format to unwrap the actual arguments hidden in the passed array.
+You'll notice that all of the callable's take an array as the first argument and a context as the second.  This is key for future expansion.  Additionally, I like to use Ruby's destructuring format to unwrap the actual arguments hidden in the passed array.
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
@@ -81,7 +81,7 @@ The ~:eq~ form takes two arguments and compares them for equality.
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-             :if    => lambda { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+             :if    => proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
 #+end_src
 
 The ~:if~ form is the first that uses the ~eval~ method.  That is, it takes a value as its first argument, tests its truthiness and either evaluates its second argument if ~true~ or evaluates its third if ~false~.
@@ -95,7 +95,7 @@ The ~:atom~ form tests for atomness (cannot be split).  Currently, the only two 
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-             :quote => lambda { |sexpr, _| sexpr[0] } }
+             :quote => proc { |sexpr, _| sexpr[0] } }
 #+end_src
 
 The ~:quote~ form just returns its first argument outright; without evaluation.
@@ -172,7 +172,7 @@ So if it wasn't an atom then it must be an executable thing right?  Working unde
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-    args = args.map { |a| self.eval(a, ctx) } if not [:quote, :if].member? fn
+    args = args.map { |a| self.eval(a, ctx) } if ctx[fn].lambda?
 #+end_src
 
 μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated /before/ the function is called.  However, I do not evaluate if the form under evaluation is either ~:quote~ or ~:if~.  This is the weakest link in extending μLithp, but I didn't want to add an extra line to make it more extensible.
