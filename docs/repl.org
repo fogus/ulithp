@@ -12,11 +12,11 @@
 
 * Extending μLithp with a Read-Eval-Print-Loop (REPL)
 
-TODO
+Again my friend [[http://www.eloquentruby.com][Russ Olsen]] took some time to play with μLithp and wrote a little REPL, shown below:
 
 ** REPL
 
-#+name: ur
+#+name: repl
 #+begin_src ruby :tangle ../src/repl.rb :noweb yes 
 require 'lithp'
 require 'reader'
@@ -31,3 +31,28 @@ while not $stdin.eof?
   print "> "
 end
 #+end_src
+
+** Usage
+
+From your shell of choice, execute the following:
+
+#+begin_src sh
+> rvm use ruby-1.9.3
+> ruby -I . repl.rb
+#+end_src
+
+This will put you in an interactive shell allowing a more traditional Lisp feel:
+
+#+begin_src lisp
+(car (quote (1 2 3)))
+;;=> 1
+
+(cdr (quote (1 2 3)))
+;;=> [2, 3]
+
+(label second (quote (lambda (x) (car (cdr x))))) 
+(second (quote (1 2 3)))
+;;=> 2
+#+end_src
+
+Fun!
