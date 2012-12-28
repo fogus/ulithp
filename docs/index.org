@@ -107,6 +107,8 @@ The ~:quote~ form just returns its first argument outright; without evaluation.
 
 And that's it for the primordial μLithp functions!  You might notice that I've not handled the ~λ~ form.  This little nasty is handled via voodoo later on.
 
+** ~apply~
+
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
   def apply fn, args, ctx=@env
@@ -134,6 +136,8 @@ If what was provided was not a Ruby callable, then I need to perform some magic.
 #+end_src
 
 And that's all there is to ~apply~.  Freaking sweet!
+
+** ~eval~
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
@@ -175,7 +179,7 @@ So if it wasn't an atom then it must be an executable thing right?  Working unde
     args = args.map { |a| self.eval(a, ctx) } if ctx[fn].lambda?
 #+end_src
 
-μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated /before/ the function is called.  However, I do not evaluate if the form under evaluation is either ~:quote~ or ~:if~.  This is the weakest link in extending μLithp, but I didn't want to add an extra line to make it more extensible.
+μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated /before/ the function is called.  However, I do not evaluate if the form under evaluation is a ~Proc~ created with ~proc~ (i.e. ~:label~, ~:quote~ or ~:if~).  Ruby hackery, FTW!
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
