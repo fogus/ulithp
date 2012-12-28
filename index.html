@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>μLithp</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="μLithp"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2012-12-28 15:42:23 EST"/>
+<meta name="author" content="Fogus"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">μLithp</h1>
+
+<p><i>μLithp</i> - a Lisp in 27 lines of Ruby <a href="http://www.github.com/fogus/ulithp">source</a>
+</p>
+<p>
+<a href="index.html">Primordial ooze</a> | <a href="reader.html">A reader</a> | <a href="repl.html">REPL</a> | <a href="compiler.html">A compiler</a> | <a href="interop.html">Ruby interop</a>
+</p>
+
+
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">In the beginning was a fancy</h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+This is a line-by-line deconstruction of how μLithp works, including commentary on extending the base language.
+</p>
+
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1">The primordial functions and forms</h3>
+<div class="outline-text-3" id="text-1-1">
+
+
+
+
+
+<pre class="src src-ruby"><span style="color: #af00ff;">class</span> <span style="color: #008700;">Lisp</span>
+</pre>
+
+
+<p>
+Ruby is one of <a href="http://c2.com/cgi/wiki?ArgumentsAgainstOop">those</a> kinds of languages, so everything starts with a class declaration. Kidding aside, I thought it would be cool to encapsulate Lispiness in a class a provide extension via inheritance, but never got around to trying it. 
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">initialize</span>(ext={})
+</pre>
+
+
+<p>
+The constructor seems like as good a place as any to declare the basic functionality.  Every minimal Lisp requires a basic set of features, including, but not limited to the following functions and special forms:
+</p>
+<ul>
+<li><code>label</code> : a way to bind a value to a name
+</li>
+<li><code>quote</code> : avoids evaluation of an expression
+</li>
+<li><code>car</code>   : retrieves the first element in a list
+</li>
+<li><code>cdr</code>   : retrieves all but the first element in a list
+</li>
+<li><code>cons</code>  : constructs a new list from some element appended to the front of some list
+</li>
+<li><code>eq</code>    : checks the equality of two values
+</li>
+<li><code>if</code>    : checks the truthiness of an expression and evaluates one of two branches depending on the result
+</li>
+<li><code>atom</code>  : checks if a value is a base value (i.e. not a composition type like a list)
+</li>
+<li><code>λ</code>     : creates a function
+</li>
+</ul>
+
+
+<p>
+I'll give more detail about each below.
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af5f00;">@env</span> = { <span style="color: #008787;">:label</span> =&gt; proc { |(name,val), _| <span style="color: #af5f00;">@env</span>[name] = eval(val, <span style="color: #af5f00;">@env</span>) },
+</pre>
+
+
+<p>
+Every Lisp evaluation takes place in the context of some environment.  In μLithp the environment is a simple Hash instance and represents a global evaluation context.  The <code>:label</code> symbol is bound to a <code>lambda</code> that takes two things, an Array with a symbol representing a name and a value and also a context (that is ignored).  The name is then inserted into the global environment with the given value.  As you can see, all bindings are created explicitly in <code>@env</code>.  You'll notice that I created the <code>:if</code> logic with the <code>proc</code> form.  Doing so signals to the evaluator that the thing defined should receive its arguments unevaluated.
+</p>
+<p>
+You'll notice that all of the callable's take an array as the first argument and a context as the second.  This is key for future expansion.  Additionally, I like to use Ruby's destructuring format to unwrap the actual arguments hidden in the passed array.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:car</span>   =&gt; lambda { |(list), _| list[0] },
+</pre>
+
+
+<p>
+The <code>:car</code> form returns the first element of its single argument.  In μLithp, lists are just Ruby arrays at the bottom.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:cdr</span>   =&gt; lambda { |(list), _| list.drop 1 },
+</pre>
+
+
+<p>
+The <code>:cdr</code> form takes a Ruby array and drops the first element.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:cons</span>  =&gt; lambda { |(e,cell), _| [e] + cell },
+</pre>
+
+
+<p>
+The <code>:cons</code> form takes some value and plops it onto the front of the array provided as the second argument.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:eq</span>    =&gt; lambda { |(l,r), _| l == r },
+</pre>
+
+
+<p>
+The <code>:eq</code> form takes two arguments and compares them for equality.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:if</span>    =&gt; proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
+</pre>
+
+
+<p>
+The <code>:if</code> form is the first that uses the <code>eval</code> method.  That is, it takes a value as its first argument, tests its truthiness and either evaluates its second argument if <code>true</code> or evaluates its third if <code>false</code>.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:atom</span>  =&gt; lambda { |(sexpr), _| (sexpr.is_a? <span style="color: #008700;">Symbol</span>) <span style="color: #af00ff;">or</span> (sexpr.is_a? <span style="color: #008700;">Numeric</span>) },
+</pre>
+
+
+<p>
+The <code>:atom</code> form tests for atomness (cannot be split).  Currently, the only two things that are atoms are Symbols and Numbers.  Numbers are a bit gratuitous because μLithp has no math operators.
+</p>
+
+
+
+<pre class="src src-ruby">             <span style="color: #008787;">:quote</span> =&gt; proc { |sexpr, _| sexpr[0] } }.merge(ext)
+</pre>
+
+
+<p>
+The <code>:quote</code> form just returns its first argument outright; without evaluation.  Also, if an extension Hash was given, it's merged into the global environment.
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's it for the primordial μLithp functions!  You might notice that I've not handled the <code>λ</code> form.  This little nasty is handled via voodoo later on.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><code>apply</code></h3>
+<div class="outline-text-3" id="text-1-2">
+
+
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">apply</span> fn, args, ctx=<span style="color: #af5f00;">@env</span>
+</pre>
+
+
+<p>
+Now starts one of the two mutually recursive functions required to implement any Lisp worth its salt, <code>apply</code>.  The <code>apply</code> function takes three arguments: 1) a symbol naming a function, 2) a array of arguments to the function and 3) a context (that defaults to <code>@env</code>).
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af00ff;">return</span> ctx[fn].call(args, ctx) <span style="color: #af00ff;">if</span> ctx[fn].respond_to? <span style="color: #008787;">:call</span>
+</pre>
+
+
+<p>
+The first thing that I try is to look up the named function in the provided context and use Ruby's <code>#call</code> method outright if the thing found responds to it.  Most like this will mean that I've found a <code>lambda</code>, <code>Proc</code> or block, but it could be anything I suppose.  I don't care much for proper error handling; I'm a Clojure programmer at heart.
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af5f00;">self</span>.eval ctx[fn][2], ctx.merge(<span style="color: #008700;">Hash</span>[*(ctx[fn][1].zip args).flatten(1)])
+</pre>
+
+
+<p>
+If what was provided was not a Ruby callable, then I need to perform some magic.  What happens is that I look up the form stored at the symbol provided and get its third argument.  For a μLithp function of the conceptual form <code>(lambda (x y) ...body...)</code> this corresponds to the body of the function.  After retrieving the body I then evaluate it in the context provided adorned with the bindings provided as arguments to the function zipped up with the original function's named parameters.  This is the aforementioned voodoo regarding the <code>lambda</code> form.  What I'm doing is working under the assumption that a function was previously bound using <code>:label</code> in a certain format: <code>[:anything, [:arg1, :arg2], [:frob, :arg1, :arg2]]</code>.  Magic!
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's all there is to <code>apply</code>.  Freaking sweet!
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3"><code>eval</code></h3>
+<div class="outline-text-3" id="text-1-3">
+
+
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">def</span> <span style="color: #0000ff;">eval</span> sexpr, ctx=<span style="color: #af5f00;">@env</span>
+</pre>
+
+
+<p>
+The second mutually recursive function needed for a Lisp is <code>eval</code>.  This is a bit more complex than <code>apply</code>, but not too bad.
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af00ff;">if</span> ctx[<span style="color: #008787;">:atom</span>].call [sexpr], ctx
+</pre>
+
+
+<p>
+The first thing to check in the course of evaluation is if the form provided is an atom.  An atom can mean it's either a Symbol or a Numeric.  So what I do I just look up the <code>:atom</code> lambda in the context provided and use it to determine atomness.
+</p>
+
+
+
+<pre class="src src-ruby">      <span style="color: #af00ff;">return</span> ctx[sexpr] || sexpr
+</pre>
+
+
+<p>
+If the form given <i>was</i> and atom then it might be a symbol bound to a value, so try to look it up in the context.  If it didn't resolve in the environment, then it is an atom on its own terms, so I just return it outright.
+</p>
+
+
+
+<pre class="src src-ruby">    <span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's all that needs done for atoms.
+</p>
+
+
+
+<pre class="src src-ruby">    fn, *args = sexpr
+</pre>
+
+
+<p>
+So if it wasn't an atom then it must be an executable thing right?  Working under this assumption I destructure the form into the function symbol and its arguments.  If you recall from CS 101 in college, a Lisp list of the logical form <code>(fn arg1 arg2)</code> means to call function <code>fn</code> with arguments <code>arg1</code> and <code>arg2</code>.  What I'm extracting is a symbol used for looking up the function implementation and an array of arguments.  If you'll recall, this is what <code>apply</code> expected.
+</p>
+
+
+
+<pre class="src src-ruby">    args = args.map { |a| <span style="color: #af5f00;">self</span>.eval(a, ctx) } <span style="color: #af00ff;">if</span> ctx[fn].is_a?(<span style="color: #008700;">Array</span>) || (ctx[fn].respond_to?(<span style="color: #008787;">:lambda?</span>) &amp;&amp; ctx[fn].lambda?)
+</pre>
+
+
+<p>
+μLithp is an eager variant of Lisp.  That is, arguments to functions are evaluated <i>before</i> the function is called.  However, I do not evaluate if the form under evaluation is a <code>Proc</code> created with <code>proc</code> (i.e. <code>:label</code>, <code>:quote</code> or <code>:if</code>).  Ruby hackery, FTW!
+</p>
+
+
+
+<pre class="src src-ruby">    apply(fn, args, ctx)
+</pre>
+
+
+<p>
+Now that I have the symbol naming a function and its evaluated arguments, I just call out to <code>apply</code> to handle the call.
+</p>
+
+
+
+<pre class="src src-ruby">  <span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's all there is to <code>eval</code>.
+</p>
+
+
+
+<pre class="src src-ruby"><span style="color: #af00ff;">end</span>
+</pre>
+
+
+<p>
+And that's all there is to μLithp.  Enjoy.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-1-4" class="outline-3">
+<h3 id="sec-1-4">Using</h3>
+<div class="outline-text-3" id="text-1-4">
+
+
+<p>
+Below is a sample IRB session using μLithp:
+</p>
+
+
+
+<pre class="src src-ruby">require <span style="color: #87005f;">'lithp.rb'</span>
+
+l = <span style="color: #008700;">Lisp</span>.new
+
+l.eval [<span style="color: #008787;">:label</span>, <span style="color: #008787;">:a</span>, 42]
+
+l.eval <span style="color: #008787;">:a</span>
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 42</span>
+
+l.eval [<span style="color: #008787;">:eq</span>, 42, <span style="color: #008787;">:a</span>]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; true</span>
+
+l.eval [<span style="color: #008787;">:quote</span>, [1, 2]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [1, 2]</span>
+
+l.eval [<span style="color: #008787;">:car</span>, [<span style="color: #008787;">:quote</span>, [1, 2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 1</span>
+
+l.eval [<span style="color: #008787;">:cdr</span>, [<span style="color: #008787;">:quote</span>, [1, 2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [2]</span>
+
+l.eval [<span style="color: #008787;">:cons</span>, 1, [<span style="color: #008787;">:quote</span>, [2,3]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; [1, 2, 3]</span>
+
+l.eval [<span style="color: #008787;">:if</span>, [<span style="color: #008787;">:eq</span>, 1, 2], 42, 43]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 43</span>
+
+l.eval [<span style="color: #008787;">:atom</span>, [<span style="color: #008787;">:quote</span>, [1,2]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; false</span>
+
+l.eval [<span style="color: #008787;">:label</span>, <span style="color: #008787;">:second</span>, [<span style="color: #008787;">:quote</span>, [<span style="color: #008787;">:lambda</span>, [<span style="color: #008787;">:x</span>],   [<span style="color: #008787;">:car</span>, [<span style="color: #008787;">:cdr</span>, <span style="color: #008787;">:x</span>]]]]]
+
+l.eval [<span style="color: #008787;">:second</span>, [<span style="color: #008787;">:quote</span>, [1, 2, 3]]]
+<span style="color: #af0000;">#</span><span style="color: #af0000;">=&gt; 2</span>
+</pre>
+
+</div>
+</div>
+</div>
+</div>
+
+<div id="postamble">
+<p class="date">Date: 2012-12-28 15:42:23 EST</p>
+<p class="author">Author: Fogus</p>
+<p class="creator">Org version 7.8.11 with Emacs version 24</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+
+</div>
+</body>
+</html>
