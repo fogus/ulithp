@@ -74,7 +74,7 @@ The ~:cons~ form takes some value and plops it onto the front of the array provi
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
-             :eq    => lambda { |(l,r), _| l == r },
+             :eq    => lambda { |(l,r), ctx| eval(l,ctx)  == eval(r,ctx) },
 #+end_src
 
 The ~:eq~ form takes two arguments and compares them for equality.
