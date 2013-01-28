@@ -4,7 +4,7 @@ class Lisp
              :car   => lambda { |(list), _| list[0] },
              :cdr   => lambda { |(list), _| list.drop 1 },
              :cons  => lambda { |(e,cell), _| [e] + cell },
-             :eq    => lambda { |(l,r), _| l == r },
+             :eq    => lambda { |(l,r), ctx| eval(l, ctx) == cond(r, ctx) },
              :if    => proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
              :atom  => lambda { |(sexpr), _| (sexpr.is_a? Symbol) or (sexpr.is_a? Numeric) },
              :quote => proc { |sexpr, _| sexpr[0] } }.merge(ext)
