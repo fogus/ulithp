@@ -84,7 +84,7 @@ The ~:eq~ form takes two arguments and compares them for equality.
              :if    => proc { |(cond, thn, els), ctx| eval(cond, ctx) ? eval(thn, ctx) : eval(els, ctx) },
 #+end_src
 
-The ~:if~ form is the first that uses the ~eval~ method.  That is, it takes a value as its first argument, tests its truthiness and either evaluates its second argument if ~true~ or evaluates its third if ~false~.
+The ~:if~ form takes a value as its first argument, tests its truthiness and either evaluates its second argument if ~true~ or evaluates its third if ~false~.
 
 #+name: ur
 #+begin_src ruby :tangle ../src/lithp.rb :noweb yes 
