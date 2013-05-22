@@ -79,8 +79,8 @@ Start typing uLithp code:
 	
 	(cdr (quote (1 2 3)))
 	
-	(label second (quote (λ (x) (car (cdr x))))) 
-	(second (quote (1 2 3)))
+	(label third (quote (lambda (x) (car (cdr (cdr x))))))
+	(third (quote (1 2 3 4 5)))
 ```
 
 Enjoy!
