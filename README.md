@@ -71,14 +71,14 @@ In your shell use Ruby 1.9.2 to run the REPL:
 You'll then see a prompt:
 
     >
-	
+
 Start typing uLithp code:
 
 ```lisp
     (car (quote (1 2 3)))
-	
+
 	(cdr (quote (1 2 3)))
-	
+
 	(label third (quote (lambda (x) (car (cdr (cdr x))))))
 	(third (quote (1 2 3 4 5)))
 ```
@@ -88,3 +88,7 @@ Enjoy!
 ## thanks
 
 Thanks to [Russ Olsen](http://eloquentruby.com) for the reader and REPL.
+
+## License
+
+This software is provided as-is under the [MIT license](http://opensource.org/licenses/MIT).
