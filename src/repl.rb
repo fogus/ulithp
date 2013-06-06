@@ -2,6 +2,10 @@ require 'readline'
 require 'lithp'
 require 'reader'
 
+# Exit gracefully with ctrl-c
+stty_save = `stty -g`.chomp
+trap('INT') { system('stty', stty_save); exit }
+
 lisp = Lisp.new
 
 if File.exist?("core.ulithp")
