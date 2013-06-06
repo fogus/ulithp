@@ -14,7 +14,7 @@ if File.exist?("core.ulithp")
 end
 
 loop do
-  line = Readline.readline("> ", true)
+  line = Readline.readline("ulithp> ", true)
   exit if line =~ /^exit$/i
 
   begin
