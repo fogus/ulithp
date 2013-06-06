@@ -16,10 +16,7 @@ class Lisp
   end
 
   def eval sexpr, ctx=@env
-    if ctx[:atom].call [sexpr], ctx
-      return ctx[sexpr] || sexpr
-    end
-
+    return(ctx[sexpr] || sexpr) if ctx[:atom].call [sexpr], ctx
     fn, *args = sexpr
     args = args.map { |a| self.eval(a, ctx) } if ctx[fn].is_a?(Array) || (ctx[fn].respond_to?(:lambda?) && ctx[fn].lambda?)
     apply(fn, args, ctx)
