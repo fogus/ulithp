@@ -12,7 +12,23 @@
 
 * In the beginning was a fancy
 
-This is a line-by-line deconstruction of how μLithp works, including commentary on extending the base language.
+This is a line-by-line deconstruction of how μLithp works, including commentary on extending the base language.  It contains as much of the following as possible:
+
+1. Computing with symbolic expressions rather than numbers.
+2. Representation of symbolic expressions and other information by list structure in computer memory.
+3. Representation of information on paper, from keyboards and in other external media mostly by multi-level lists and sometimes by S-expressions. It has been important that any kind of data can be represented by a single general type.
+4. A small set of selector and constructor operations expressed as functions, i.e. car, cdr and cons.
+5. Composition of functions as a tool for forming more complex functions.
+6. The use of conditional expressions for getting branching into function definitions.
+The recursive use of conditional expressions as a sufficient tool for building computable functions.
+The use of   -expressions for naming functions.
+The storage of information on the property lists of atoms.
+The representation of LISP programs as LISP data that can be manipulated by object programs. This has prevented the separation between system programmers and application programmers. Everyone can ``improve'' his LISP, and many of these ``improvements'' have developed into improvements to the language.
+The conditional expression interpretation of Boolean connectives.
+The LISP function eval that serves both as a formal definition of the language and as an interpreter.
+Garbage collection as the means of erasure.
+Minimal requirements for declarations so that LISP statements can be executed in an on-line environment without preliminaries.
+LISP statements as a command language in an on-line environment.
 
 ** The primordial functions and forms
 
