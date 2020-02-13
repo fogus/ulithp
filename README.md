@@ -2,7 +2,7 @@
 
 ### [Official website and deep analysis](http://fogus.github.com/ulithp)
 
-A micro LISP implementation in 25 lines of Ruby, with a reader in 33 lines, REPL in 35 lines, a compiler in 15 lines and Ruby interop in 13 lines.  Really frickin' small.
+A micro LISP implementation in 24 lines of Ruby, with a reader in 33 lines, REPL in 35 lines, a compiler in 15 lines and Ruby interop in 13 lines.  Really frickin' small.
 
 * `car`
 * `cdr`
